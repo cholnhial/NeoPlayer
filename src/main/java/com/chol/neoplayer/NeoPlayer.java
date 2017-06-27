@@ -1,42 +1,93 @@
 package com.chol.neoplayer;
 
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import jaco.mp3.player.MP3Player;
 import picocli.CommandLine;
+import com.mpatric.
 
-import java.io.File;
 
-@Command(name = "neoplayer", footer = "Copyright(c) 2017", description = "A simple MP3 music player.")
 public class NeoPlayer
 {
-    @Option(names = {"-v", "--verbose"}, description = "Be verbose.")
-    private boolean verbose = false;
+    private MP3Player player;
+    private NeoPlayerCommandOptions neoPlayerCommandOptions;
+    private long secondsToPlaySong;
 
-    @Parameters(arity = "1...*", paramLabel = "FILE", description = "MP3 File(s) to play.")
-    private File[] mp3FilesToPlay;
-
-    @Option(names = {"-l', '--playlist"}, paramLabel = "FILE", description = "Play MP3 files listed in file.")
-    private File playListFile;
-
-    @Option(names = {"-r --repeat"}, description = "Repeat song or playlist.")
-    private boolean isRepeatSet = false;
-
-    @Option(names = {"-h", "--help"}, help = true, description = "Display this here help message.")
-    private boolean hasRequestedHelp = false;
-
-    public boolean hasHelpBeenRequested() {
-        return hasRequestedHelp;
+    public NeoPlayer(String args[]) {
+        neoPlayerCommandOptions = CommandLine.populateCommand(new NeoPlayerCommandOptions(), args);
+        player = new MP3Player();
+        secondsToPlaySong = 0;
     }
-    public static int main( String[] args)
-    {
-        NeoPlayer neoPlayer = CommandLine.populateCommand(new NeoPlayer(), args);
 
-        if(neoPlayer.hasHelpBeenRequested()) {
-            CommandLine.usage(neoPlayer, System.err);
-            return 0;
+    public void addFilesToPlayList(File[] mp3Files) {
+        for(File file : mp3Files) {
+            Mp3File mp3File = new Mp3File;
+            player.addToPlayList(file);
+        }
+    }
+
+    public void addFileFromPlayList(File file) throws IOException {
+        addFilesToPlayList(readFileList(file));
+    }
+
+    private File[] readFileList(File file) throws IOException {
+        List<File> fileList = new ArrayList<>();
+
+        FileReader fileReader = new FileReader(file);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+        String line;
+        while((line = bufferedReader.readLine()) != null) {
+            fileList.add(new File(line.trim()));
         }
 
-        return 0;
+        return (File[]) fileList.toArray();
+    }
+
+    public MP3Player getPlayer() {
+        return player;
+    }
+
+
+    public NeoPlayerCommandOptions getNeoPlayerCommandOptions() {
+        return neoPlayerCommandOptions;
+    }
+
+    public static void main(String[] args)
+    {
+        NeoPlayer neoPlayer = new NeoPlayer(args);
+
+        try {
+            if (neoPlayer.getNeoPlayerCommandOptions().hasHelpBeenRequested()) {
+                CommandLine.usage(neoPlayer.getNeoPlayerCommandOptions(), System.err);
+                return;
+            }
+
+            if (neoPlayer.getNeoPlayerCommandOptions().getMp3FilesToPlay().length > 0) {
+                neoPlayer.addFilesToPlayList(neoPlayer.getNeoPlayerCommandOptions().getMp3FilesToPlay());
+            }
+
+            if (neoPlayer.getNeoPlayerCommandOptions().getPlayListFile() != null) {
+                neoPlayer.addFileFromPlayList(neoPlayer.getNeoPlayerCommandOptions().getPlayListFile());
+            }
+
+            neoPlayer.getPlayer().setRepeat(neoPlayer.getNeoPlayerCommandOptions().isRepeatSet());
+
+            neoPlayer.getPlayer().play();
+        }
+        catch (FileNotFoundException ex) {
+            System.err.println("ERROR: Playlist file or other files not found: " + ex.getMessage());
+            System.exit(-1);
+        }
+        catch (IOException ex) {
+            System.err.println("ERROR: An IO exception occurred");
+            System.exit(-1);
+        }
+
+        System.out.println("Playing...");
+        neoPlayer.getPlayer().play();
     }
 }
