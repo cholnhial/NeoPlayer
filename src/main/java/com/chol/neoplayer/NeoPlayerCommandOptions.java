@@ -11,7 +11,7 @@ public class NeoPlayerCommandOptions {
     @Option(names = {"-v", "--verbose"}, description = "Be verbose.")
     private boolean verbose = false;
 
-    @Parameters(arity = "1...*", paramLabel = "FILE", description = "MP3 File(s) to play.")
+    @Parameters(arity = "0...*", paramLabel = "FILE", description = "MP3 File(s) to play.")
     private File[] mp3FilesToPlay;
 
     @Option(names = {"-l", "--playlist"}, paramLabel = "FILE", description = "Play MP3 files listed in file.")
