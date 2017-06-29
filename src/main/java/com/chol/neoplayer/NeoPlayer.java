@@ -9,26 +9,22 @@ import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.UnsupportedTagException;
 import jaco.mp3.player.MP3Player;
 import picocli.CommandLine;
-import com.mpatric.mp3agic.Mp3File;
-
 
 public class NeoPlayer
 {
     private MP3Player player;
     private NeoPlayerCommandOptions neoPlayerCommandOptions;
-    private long milliSecondsToPlaySongs;
+    List<File> filesToPlay;
 
     public NeoPlayer(String args[]) {
+        filesToPlay = new ArrayList<>();
         neoPlayerCommandOptions = CommandLine.populateCommand(new NeoPlayerCommandOptions(), args);
         player = new MP3Player();
-        milliSecondsToPlaySongs = 0;
     }
 
     public void addFilesToPlayList(File[] mp3Files) throws IOException, UnsupportedTagException, InvalidDataException {
         for(File file : mp3Files) {
-            Mp3File mp3File = new Mp3File(file.getAbsolutePath());
-            milliSecondsToPlaySongs += mp3File.getLengthInMilliseconds();
-            player.addToPlayList(file);
+            filesToPlay.add(file);
         }
     }
 
@@ -58,10 +54,40 @@ public class NeoPlayer
     public NeoPlayerCommandOptions getNeoPlayerCommandOptions() {
         return neoPlayerCommandOptions;
     }
-    
+
+    public void playFromList() throws IOException {
+        player.stop();
+        player.getPlayList().clear();
+
+        for(File file : filesToPlay) {
+            player.addToPlayList(file);
+        }
+        player.play();
+    }
+
+    public void play() throws IOException {
+        if(neoPlayerCommandOptions.isRepeatSet()) {
+            while(true) {
+                if(player.isStopped())
+                 playFromList();
+            }
+        } else {
+            playFromList();
+        }
+    }
+
+
+
     public void waitForPlayer() {
         try {
-            Thread.sleep(milliSecondsToPlaySongs);
+
+            while(true) {
+                Thread.sleep(1500);
+                if(player.isStopped()) {
+                    break;
+                }
+            }
+
         }
         catch (InterruptedException ex) {
             System.err.println("ERROR: " + ex.getMessage());
@@ -89,8 +115,9 @@ public class NeoPlayer
             }
 
             neoPlayer.getPlayer().setRepeat(neoPlayer.getNeoPlayerCommandOptions().isRepeatSet());
+            neoPlayer.getPlayer().setShuffle(neoPlayer.getNeoPlayerCommandOptions().isShuffleSet());
 
-            neoPlayer.getPlayer().play();
+            neoPlayer.play();
         }
         catch (FileNotFoundException ex) {
             System.err.println("ERROR: Playlist file or other files not found: " + ex.getMessage());
@@ -106,7 +133,6 @@ public class NeoPlayer
 
 
         System.out.println("Playing...");
-        neoPlayer.getPlayer().play();
         neoPlayer.waitForPlayer();
         
     }

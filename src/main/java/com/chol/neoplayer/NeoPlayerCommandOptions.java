@@ -17,8 +17,11 @@ public class NeoPlayerCommandOptions {
     @Option(names = {"-l", "--playlist"}, paramLabel = "FILE", description = "Play MP3 files listed in file.")
     private File playListFile;
 
-    @Option(names = {"-r --repeat"}, description = "Repeat song or playlist.")
+    @Option(names = {"-r",  "--repeat"}, description = "Repeat song or playlist.")
     private boolean isRepeatSet = false;
+
+    @Option(names = {"-s", "--shuffle"}, description = "Shuffle the playlist")
+    private boolean isShuffleSet = false;
 
     @Option(names = {"-h", "--help"}, help = true, description = "Display this here help message.")
     private boolean hasRequestedHelp = false;
@@ -29,6 +32,10 @@ public class NeoPlayerCommandOptions {
 
     public boolean isRepeatSet () {
         return isRepeatSet;
+    }
+
+    public boolean isShuffleSet() {
+        return isShuffleSet;
     }
 
     public boolean isVerbose() {
