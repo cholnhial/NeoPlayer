@@ -65,9 +65,10 @@ public class NeoPlayer
         player.play();
     }
 
-    public void play() throws IOException {
+    public void play() throws IOException, InterruptedException {
         if(neoPlayerCommandOptions.isRepeatSet()) {
             while(true) {
+                Thread.sleep(1000);
                 if(player.isStopped())
                  playFromList();
             }
@@ -92,6 +93,12 @@ public class NeoPlayer
         catch (InterruptedException ex) {
             System.err.println("ERROR: " + ex.getMessage());
             System.exit(-1);
+        }
+    }
+
+    public void printMsgIfVerbose(String msg) {
+        if(neoPlayerCommandOptions.isVerbose()) {
+            System.out.println(msg);
         }
     }
 
@@ -130,9 +137,10 @@ public class NeoPlayer
         catch(InvalidDataException|UnsupportedTagException ex) {
             System.err.printf("ERROR: an ID3 error occurred(%s)\n", ex.getMessage());
         }
-
-
-        System.out.println("Playing...");
+        catch(InterruptedException ex) {
+            System.err.format("InterruptedException: %s%n", ex);
+        }
+        neoPlayer.printMsgIfVerbose("Playing...");
         neoPlayer.waitForPlayer();
         
     }
