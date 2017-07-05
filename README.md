@@ -17,7 +17,8 @@ The jar will be in `target` directory of the projeect.
 To display usage:
 
     $ java -jar neoplayer.jar --help
-    
+
+### Play some music    
 Playing  single file or a list of files
     
     $ java -jar neoplayer.jar file1.mp3 file2.mp3
@@ -28,3 +29,10 @@ Playing from a playlist containing songs like:
 /home/bob/Music/Justin Bieber - Baby`
 
     $ java -jar neoplayer.jar -l playlist.lst
+
+### Special options
+A few other options allow you to shuffle and repeat a playlist or file.
+
+To <b>repeat</b> a playlist or file add the `-r` option.
+
+To <b>shuffle</b> shuffle the playlist you add the `-s` option.
